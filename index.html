@@ -616,6 +616,79 @@
   }
   .modal-close-btn:hover { background: var(--red); }
 
+
+  /* ── DUPLICATES PAGE ── */
+  #dupPage {
+    display: none;
+    position: fixed; inset: 0; z-index: 400;
+    background: var(--bg-0);
+    overflow-y: auto;
+  }
+  #dupPage.open { display: block; }
+  .dup-header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(7,10,15,0.95);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .dup-title {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+    font-size: 1.4rem; letter-spacing: -0.01em;
+  }
+  .dup-title span { color: var(--bmw-blue); }
+  .dup-body { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+  .dup-group {
+    margin-bottom: 3rem;
+  }
+  .dup-group-label {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 0.8rem;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .dup-group-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .dup-score {
+    display: inline-flex; align-items: center;
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+    padding: 2px 8px; border-radius: 20px;
+  }
+  .dup-score.high { background: rgba(232,64,64,0.12); color: var(--red); border: 1px solid rgba(232,64,64,0.25); }
+  .dup-score.medium { background: rgba(201,168,76,0.12); color: var(--gold); border: 1px solid rgba(201,168,76,0.25); }
+  .dup-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .dup-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .dup-card:hover { border-color: rgba(232,64,64,0.4); }
+  .dup-card img {
+    width: 100%; height: 180px; object-fit: cover;
+    display: block; background: var(--bg-2);
+  }
+  .dup-card-body { padding: 1rem; }
+  .dup-card-model {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+    font-size: 1.1rem; margin-bottom: 0.3rem;
+  }
+  .dup-card-meta { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.8rem; line-height: 1.7; }
+  .dup-card-meta strong { color: var(--text-primary); }
+  .dup-diff {
+    background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2);
+    border-radius: var(--radius); padding: 0.4rem 0.7rem;
+    font-size: 0.73rem; color: var(--gold); margin-bottom: 0.7rem;
+  }
+  .dup-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .dup-empty {
+    text-align: center; padding: 5rem 2rem;
+    color: var(--text-secondary);
+  }
+  .dup-empty .icon { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.4; }
 </style>
 </head>
 <body>
@@ -634,6 +707,7 @@
       <span id="headerCount" class="badge-count">0 motocyklů</span>
       <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
       <button class="btn btn-ghost btn-sm" onclick="shareList()">🔗 Sdílet</button>
+      <button class="btn btn-ghost btn-sm" id="dupBtn" onclick="showDuplicates()">⚠ Duplicity</button>
       <button class="btn btn-ghost btn-sm" onclick="clearAll()">🗑 Vymazat vše</button>
       <a href="#compare" class="btn btn-primary btn-sm">Srovnat →</a>
     </div>
@@ -898,6 +972,19 @@
   </div>
 </section>
 </main>
+
+<!-- ── DUPLICATES PAGE ── -->
+<div id="dupPage">
+  <div class="dup-header">
+    <div class="dup-title">⚠ Duplicitní <span>inzeráty</span></div>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <span id="dupFoundCount" style="font-size:0.8rem;color:var(--text-secondary)"></span>
+      <button class="btn btn-ghost btn-sm" onclick="closeDuplicates()">✕ Zpět</button>
+    </div>
+  </div>
+  <div class="dup-body" id="dupBody"></div>
+</div>
+
 
 <!-- FOOTER -->
 <footer>
@@ -1362,6 +1449,22 @@ function renderAll() {
   updateHeader();
   renderCards();
   renderTable();
+  updateDupBadge();
+}
+
+function updateDupBadge() {
+  const btn = document.getElementById('dupBtn');
+  if (!btn) return;
+  const count = findDuplicateGroups().length;
+  if (count > 0) {
+    btn.textContent = `⚠ Duplicity (${count})`;
+    btn.style.borderColor = 'rgba(232,64,64,0.4)';
+    btn.style.color = 'var(--red)';
+  } else {
+    btn.textContent = '⚠ Duplicity';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+  }
 }
 
 function updateHeader() {
@@ -1760,6 +1863,190 @@ function editNotes(id) {
   if (note === null) return;
   bike.notes = note;
   save(); renderAll();
+}
+
+
+// ═══════════════════════════════════════════════
+// DUPLICATE DETECTION
+// ═══════════════════════════════════════════════
+function normModel(s) {
+  return (s || '').toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .replace(/bmw|honda|yamaha|kawasaki|suzuki|ktm|ducati|triumph/g, '');
+}
+
+function photoFilename(url) {
+  if (!url) return null;
+  try { return new URL(url).pathname.split('/').pop().replace(/\?.*$/, ''); }
+  catch { return null; }
+}
+
+function similarityScore(a, b) {
+  if (a.id === b.id) return 0;
+  // same domain = definitely not a duplicate
+  if (getDomain(a.url) && getDomain(a.url) === getDomain(b.url)) return 0;
+
+  let score = 0;
+
+  // price match ±2%
+  if (a.price && b.price) {
+    const diff = Math.abs(a.price - b.price) / Math.max(a.price, b.price);
+    if (diff <= 0.02) score += 35;
+    else if (diff <= 0.05) score += 15;
+  }
+
+  // km match ±500
+  if (a.km && b.km) {
+    const diff = Math.abs(a.km - b.km);
+    if (diff <= 500) score += 30;
+    else if (diff <= 2000) score += 10;
+  }
+
+  // year match
+  if (a.year && b.year && a.year === b.year) score += 15;
+
+  // model similarity
+  const ma = normModel(a.model), mb = normModel(b.model);
+  if (ma && mb && ma === mb) score += 10;
+  else if (ma && mb && (ma.includes(mb) || mb.includes(ma))) score += 5;
+
+  // power + ccm
+  if (a.power && b.power && a.power === b.power) score += 5;
+  if (a.ccm && b.ccm && a.ccm === b.ccm) score += 5;
+
+  // photo filename match (strong signal)
+  const fa = photoFilename(a.photos?.[0]);
+  const fb = photoFilename(b.photos?.[0]);
+  if (fa && fb && fa === fb && fa.length > 6) score += 40;
+
+  return score;
+}
+
+function findDuplicateGroups() {
+  const threshold = 60;
+  const used = new Set();
+  const groups = [];
+
+  for (let i = 0; i < bikes.length; i++) {
+    if (used.has(bikes[i].id)) continue;
+    const group = [bikes[i]];
+    const scores = [];
+
+    for (let j = i + 1; j < bikes.length; j++) {
+      if (used.has(bikes[j].id)) continue;
+      const score = similarityScore(bikes[i], bikes[j]);
+      if (score >= threshold) {
+        group.push(bikes[j]);
+        scores.push(score);
+        used.add(bikes[j].id);
+      }
+    }
+
+    if (group.length > 1) {
+      used.add(bikes[i].id);
+      const maxScore = scores.length ? Math.max(...scores) : 0;
+      groups.push({ bikes: group, score: maxScore });
+    }
+  }
+  return groups;
+}
+
+function showDuplicates() {
+  const groups = findDuplicateGroups();
+  const body = document.getElementById('dupBody');
+  const countEl = document.getElementById('dupFoundCount');
+
+  countEl.textContent = groups.length
+    ? `${groups.length} skupina${groups.length > 1 ? 'y' : ''} duplicit · ${groups.reduce((s,g)=>s+g.bikes.length,0)} inzerátů`
+    : '';
+
+  if (!groups.length) {
+    body.innerHTML = `<div class="dup-empty"><div class="icon">✓</div><p style="font-size:1rem;font-weight:600;color:var(--text-primary)">Žádné duplicity nenalezeny</p><p style="margin-top:0.5rem;font-size:0.88rem">Všechny inzeráty vypadají jako unikátní motocykly.</p></div>`;
+    document.getElementById('dupPage').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    return;
+  }
+
+  body.innerHTML = groups.map((group, gi) => {
+    const scoreClass = group.score >= 80 ? 'high' : 'medium';
+    const scoreLabel = group.score >= 80 ? 'Velmi pravděpodobná duplicita' : 'Možná duplicita';
+
+    const cards = group.bikes.map(bike => {
+      const photo = bike.photos?.[0];
+      const domain = getDomain(bike.url);
+
+      // Find price/km differences within group
+      const prices = group.bikes.map(b => b.price).filter(Boolean);
+      const kms = group.bikes.map(b => b.km).filter(Boolean);
+      const priceDiff = prices.length > 1 ? Math.max(...prices) - Math.min(...prices) : 0;
+      const kmDiff = kms.length > 1 ? Math.max(...kms) - Math.min(...kms) : 0;
+      const diffNote = [];
+      if (priceDiff > 0) diffNote.push(`Rozdíl cen: ${priceDiff.toLocaleString('cs-CZ')} Kč`);
+      if (kmDiff > 500) diffNote.push(`Rozdíl km: ${kmDiff.toLocaleString('cs-CZ')} km`);
+
+      return `
+      <div class="dup-card" id="dup-card-${bike.id}">
+        ${photo
+          ? `<img src="${photo}" alt="${bike.model}" onerror="this.style.background='var(--bg-3)';this.style.display='flex'" loading="lazy"/>`
+          : `<div style="height:180px;background:var(--bg-2);display:flex;align-items:center;justify-content:center;font-size:2.5rem">🏍</div>`}
+        <div class="dup-card-body">
+          <div class="dup-card-model">${bike.model}</div>
+          <div class="dup-card-meta">
+            <strong>${formatPrice(bike.price)}</strong> · ${bike.year || '?'}<br>
+            ${bike.km ? bike.km.toLocaleString('cs-CZ') + ' km · ' : ''}${bike.origin ? flagOf(bike.origin) + ' ' + bike.origin + ' · ' : ''}<span style="color:var(--text-muted)">${domain || '—'}</span>
+          </div>
+          ${diffNote.length ? `<div class="dup-diff">⚠ ${diffNote.join(' · ')}</div>` : ''}
+          <div class="dup-actions">
+            ${bike.url ? `<a href="${bike.url}" class="btn btn-ghost btn-sm" target="_blank">↗ Inzerát</a>` : ''}
+            <button class="btn btn-danger btn-sm" onclick="removeDup(${bike.id}, ${gi})">🗑 Smazat</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `
+    <div class="dup-group" id="dup-group-${gi}">
+      <div class="dup-group-label">
+        Skupina ${gi + 1}
+        <span class="dup-score ${scoreClass}">${scoreLabel} · skóre ${group.score}</span>
+      </div>
+      <div class="dup-row">${cards}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('dupPage').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function removeDup(bikeId, groupIdx) {
+  const bike = bikes.find(b => b.id === bikeId);
+  if (!bike) return;
+  if (!confirm(`Smazat "${bike.model}"?`)) return;
+
+  bikes = bikes.filter(b => b.id !== bikeId);
+  save();
+  renderAll();
+
+  // Remove card from dup page
+  const card = document.getElementById(`dup-card-${bikeId}`);
+  if (card) card.remove();
+
+  // Check if group is now single — hide it
+  const group = document.getElementById(`dup-group-${groupIdx}`);
+  if (group) {
+    const remaining = group.querySelectorAll('.dup-card').length;
+    if (remaining <= 1) {
+      group.style.opacity = '0.3';
+      group.style.pointerEvents = 'none';
+      group.querySelector('.dup-group-label').textContent = `Skupina ${groupIdx + 1} — vyřešeno ✓`;
+    }
+  }
+  toast(`${bike.model} odstraněn`, 'success');
+}
+
+function closeDuplicates() {
+  document.getElementById('dupPage').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 function exportCSV() {
