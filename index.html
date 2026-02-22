@@ -355,6 +355,23 @@
     font-size: 1.1rem; color: var(--bmw-blue);
   }
   .val-best { color: var(--green); font-weight: 600; }
+
+  /* ── FAVORITE STAR ── */
+  .fav-btn {
+    position: absolute; top: 10px; left: 10px; z-index: 3;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(0,0,0,0.55); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; transition: transform 0.2s, background 0.2s;
+    line-height: 1;
+  }
+  .fav-btn:hover { transform: scale(1.2); background: rgba(0,0,0,0.75); }
+  .fav-btn.active { background: rgba(201,168,76,0.25); }
+  .fav-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+    color: var(--gold); text-transform: uppercase;
+  }
   .val-worst { color: var(--red); }
 
   /* ── FILTER BAR ── */
@@ -778,6 +795,7 @@
       <button class="sort-btn" data-sort="km">Km ↑</button>
       <button class="sort-btn" data-sort="year">Rok ↓</button>
       <button class="sort-btn" data-sort="rating">Hodnocení</button>
+      <button class="sort-btn" data-sort="favorite">★ Oblíbené</button>
     </div>
   </div>
 
@@ -1335,6 +1353,7 @@ function getSorted() {
     case 'km': return b.sort((a,z) => (a.km||Infinity)-(z.km||Infinity));
     case 'year': return b.sort((a,z) => (z.year||0)-(a.year||0));
     case 'rating': return b.sort((a,z) => (z.rating||0)-(a.rating||0));
+    case 'favorite': return b.sort((a,z) => (z.favorite?1:0)-(a.favorite?1:0));
     default: return b.sort((a,z) => a.added - z.added);
   }
 }
@@ -1391,10 +1410,17 @@ function renderCards() {
           ? `<img class="bike-photo" src="${photo}" alt="${bike.model}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"/><div class="bike-photo-placeholder" style="display:none">🏍</div>`
           : `<div class="bike-photo-placeholder">🏍</div>`}
         ${photoCount > 1 ? `<div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:white;font-size:0.7rem;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:0.08em;padding:2px 8px;border-radius:20px">📷 ${photoCount}</div>` : ''}
+        <button class="fav-btn${bike.favorite ? ' active' : ''}" onclick="event.stopPropagation();toggleFavorite(${bike.id})" title="${bike.favorite ? 'Odebrat z oblíbených' : 'Přidat do oblíbených'}">${bike.favorite ? '★' : '☆'}</button>
       </div>
       <div class="bike-body">
-        <div class="bike-model">${bike.model}</div>
-        <div class="bike-year-origin">${bike.year || '?'} ${bike.origin ? '· ' + flagOf(bike.origin) + ' ' + bike.origin : ''}</div>
+        <div class="bike-model" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+          ${bike.model}
+          ${bike.favorite ? `<span class="fav-badge">★ Oblíbený</span>` : ''}
+        </div>
+        <div class="bike-year-origin">
+          ${bike.year || '?'} ${bike.origin ? '· ' + flagOf(bike.origin) + ' ' + bike.origin : ''}
+          ${getDomain(bike.url) ? `· <span style="color:var(--text-muted);font-size:0.75rem">${getDomain(bike.url)}</span>` : ''}
+        </div>
         <div class="bike-price">${formatPrice(bike.price)}</div>
         <div class="bike-stats">
           <div class="bike-stat"><span class="label">Najeté km</span><span class="value">${bike.km ? bike.km.toLocaleString('cs-CZ') + ' km' : '—'}</span></div>
@@ -1548,7 +1574,10 @@ function renderTable() {
       <td>${bike.power ? bike.power + ' kW' : '—'}</td>
       <td>${bike.ccm ? bike.ccm + ' ccm' : '—'}</td>
       <td>${bike.rating ? '★'.repeat(bike.rating) : '—'}</td>
-      <td>${bike.url ? `<a href="${bike.url}" class="bike-url-link" target="_blank">↗ Odkaz</a>` : '—'}</td>
+      <td>
+        ${getDomain(bike.url) ? `<span style="font-size:0.8rem;color:var(--text-secondary)">${getDomain(bike.url)}</span>` : '—'}
+        ${bike.url ? `<br><a href="${bike.url}" class="bike-url-link" target="_blank" style="font-size:0.72rem">↗ otevřít</a>` : ''}
+      </td>
     </tr>`;
   }).join('');
 }
@@ -1670,6 +1699,14 @@ function formatPrice(p) {
   return p.toLocaleString('cs-CZ') + ' Kč';
 }
 
+function getDomain(url) {
+  if (!url) return null;
+  try {
+    const h = new URL(url).hostname.replace(/^www\./, '');
+    return h;
+  } catch { return null; }
+}
+
 function stkBadge(stk) {
   if (!stk) return '<span class="stk-badge stk-unknown">neznámá</span>';
   const d = parseSTK(stk);
@@ -1756,9 +1793,9 @@ function openDetail(id) {
   document.getElementById('modalMeta').textContent =
     [bike.year, bike.origin ? flagOf(bike.origin) + ' ' + bike.origin : null].filter(Boolean).join(' · ');
   document.getElementById('modalPrice').textContent = formatPrice(bike.price);
-  document.getElementById('modalStars').innerHTML = bike.rating
-    ? `<span style="color:var(--gold)">${'★'.repeat(bike.rating)}</span><span style="color:var(--text-muted)">${'★'.repeat(5-bike.rating)}</span>`
-    : '';
+  document.getElementById('modalStars').innerHTML =
+    (bike.rating ? `<span style="color:var(--gold)">${'★'.repeat(bike.rating)}</span><span style="color:var(--text-muted)">${'★'.repeat(5-bike.rating)}</span>` : '') +
+    (bike.favorite ? ' &nbsp;<span class="fav-badge">★ Oblíbený</span>' : '');
 
   // stats grid
   const stats = [
@@ -1767,6 +1804,7 @@ function openDetail(id) {
     { label: 'Výkon', value: bike.power ? bike.power + ' kW' : '—' },
     { label: 'Objem', value: bike.ccm ? bike.ccm + ' ccm' : '—' },
     { label: 'Původ', value: bike.origin ? flagOf(bike.origin) + ' ' + bike.origin : '—' },
+    { label: 'Zdroj', value: getDomain(bike.url) || '—' },
     { label: 'Přidáno', value: new Date(bike.added).toLocaleDateString('cs-CZ') },
   ];
   document.getElementById('modalGrid').innerHTML = stats.map(s =>
@@ -1844,6 +1882,18 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') modalNavPhoto(-1);
   if (e.key === 'ArrowRight') modalNavPhoto(1);
 });
+
+// ═══════════════════════════════════════════════
+// FAVORITE
+// ═══════════════════════════════════════════════
+function toggleFavorite(id) {
+  const bike = bikes.find(b => b.id === id);
+  if (!bike) return;
+  bike.favorite = !bike.favorite;
+  save();
+  renderAll();
+  toast(bike.favorite ? `★ ${bike.model} přidán do oblíbených` : `${bike.model} odebrán z oblíbených`, bike.favorite ? 'success' : 'info');
+}
 
 // ═══════════════════════════════════════════════
 // SORT
