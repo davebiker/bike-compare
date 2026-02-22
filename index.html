@@ -374,6 +374,39 @@
   }
   .val-best { color: var(--green); font-weight: 600; }
   .val-worst { color: var(--red); }
+
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    display: flex; flex-wrap: wrap; gap: 0.6rem;
+    align-items: flex-end;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1rem 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .filter-group {
+    display: flex; flex-direction: column; gap: 0.25rem;
+    min-width: 110px;
+  }
+  .filter-group label {
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--text-muted);
+  }
+  .filter-group input, .filter-group select {
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text-primary);
+    font-family: 'Barlow', sans-serif; font-size: 0.82rem;
+    padding: 0.4rem 0.6rem; outline: none; transition: border-color 0.2s;
+  }
+  .filter-group input:focus, .filter-group select:focus { border-color: var(--bmw-blue); }
+  .filter-group select option { background: var(--bg-2); }
+
+  /* sortable th */
+  .th-sort {
+    cursor: pointer; user-select: none; white-space: nowrap;
+    transition: color 0.15s;
+  }
+  .th-sort:hover { color: var(--bmw-blue-light) !important; }
+  .sort-icon { font-size: 0.7em; opacity: 0.6; }
   .empty-state {
     text-align: center; padding: 5rem 2rem;
     display: none;
@@ -493,6 +526,97 @@
     .form-grid { grid-template-columns: 1fr; }
     .bikes-grid { grid-template-columns: 1fr; }
   }
+
+  /* ── DETAIL MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center; padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg-1); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); width: 100%; max-width: 900px;
+    max-height: 90vh; overflow-y: auto;
+    animation: fadeUp 0.25s ease;
+  }
+  .modal-hero {
+    position: relative; width: 100%; height: 380px; overflow: hidden;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: var(--bg-2); cursor: pointer;
+  }
+  .modal-hero img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: opacity 0.3s;
+  }
+  .modal-hero-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    display: flex; justify-content: space-between; width: 100%; padding: 0 0.8rem;
+    pointer-events: none;
+  }
+  .modal-nav-btn {
+    pointer-events: all; background: rgba(0,0,0,0.55); border: none; color: white;
+    width: 38px; height: 38px; border-radius: 50%; font-size: 1.1rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .modal-nav-btn:hover { background: rgba(28,105,212,0.7); }
+  .modal-photo-count {
+    position: absolute; bottom: 10px; right: 12px;
+    background: rgba(0,0,0,0.6); color: white; font-size: 0.72rem;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+    letter-spacing: 0.1em; padding: 3px 10px; border-radius: 20px;
+  }
+  .modal-thumbs {
+    display: flex; gap: 0.4rem; padding: 0.7rem 1.2rem;
+    overflow-x: auto; background: var(--bg-2);
+  }
+  .modal-thumb {
+    width: 72px; height: 52px; object-fit: cover; border-radius: 4px;
+    cursor: pointer; border: 2px solid transparent; flex-shrink: 0;
+    transition: border-color 0.15s, opacity 0.15s; opacity: 0.65;
+  }
+  .modal-thumb.active { border-color: var(--bmw-blue); opacity: 1; }
+  .modal-thumb:hover { opacity: 0.9; }
+  .modal-body { padding: 1.5rem; }
+  .modal-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 1.2rem; gap: 1rem;
+  }
+  .modal-title {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+    font-size: 1.8rem; letter-spacing: -0.01em; line-height: 1;
+  }
+  .modal-price {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    font-size: 2rem; color: var(--bmw-blue); white-space: nowrap;
+  }
+  .modal-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.8rem; margin-bottom: 1.2rem;
+  }
+  .modal-stat { background: var(--bg-3); border-radius: var(--radius); padding: 0.7rem 1rem; }
+  .modal-stat .label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.18em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.2rem; }
+  .modal-stat .value { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+  .modal-notes {
+    background: var(--bg-3); border-left: 3px solid var(--bmw-blue);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 0.8rem 1rem; font-size: 0.88rem; color: var(--text-secondary);
+    font-style: italic; margin-bottom: 1rem;
+  }
+  .modal-footer {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+    padding-top: 1rem; border-top: 1px solid var(--border);
+  }
+  .modal-close-btn {
+    position: absolute; top: 10px; right: 10px; z-index: 10;
+    background: rgba(0,0,0,0.6); border: none; color: white;
+    width: 34px; height: 34px; border-radius: 50%; font-size: 1rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .modal-close-btn:hover { background: var(--red); }
+
 </style>
 </head>
 <body>
@@ -537,6 +661,28 @@
       <button class="btn btn-primary btn-lg" onclick="fetchBike()">Načíst</button>
     </div>
     <div id="statusBar" class="status-bar"></div>
+
+    <div style="margin-top:0.7rem">
+      <button class="btn btn-ghost btn-sm" onclick="toggleBulk()" id="bulkToggleBtn">⊞ Přidat více URL najednou</button>
+    </div>
+
+    <div id="bulkSection" style="display:none;margin-top:0.8rem">
+      <label style="font-size:0.7rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:0.4rem">Každá URL na nový řádek (max 10)</label>
+      <textarea id="bulkInput" rows="5"
+        style="width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-primary);font-family:'Barlow',sans-serif;font-size:0.82rem;padding:0.6rem 0.8rem;outline:none;resize:vertical;line-height:1.8;transition:border-color 0.2s"
+        onfocus="this.style.borderColor='var(--bmw-blue)'" onblur="this.style.borderColor=''"
+        placeholder="https://motorky.bazos.cz/inzerat/111...&#10;https://motorky.bazos.cz/inzerat/222...&#10;https://www.sauto.cz/inzerce/detail/..."></textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:0.5rem;flex-wrap:wrap;gap:0.5rem">
+        <span id="bulkCounter" style="font-size:0.75rem;color:var(--text-muted)">0 URL</span>
+        <button class="btn btn-primary" onclick="fetchBulk()">⬇ Načíst všechny</button>
+      </div>
+      <div id="bulkProgress" style="display:none;margin-top:0.8rem">
+        <div style="height:3px;background:var(--bg-3);border-radius:2px;overflow:hidden;margin-bottom:0.6rem">
+          <div id="bulkProgressBar" style="height:100%;background:var(--bmw-blue);border-radius:2px;width:0%;transition:width 0.5s"></div>
+        </div>
+        <div id="bulkLog" style="font-size:0.78rem;color:var(--text-secondary);line-height:2;max-height:130px;overflow-y:auto"></div>
+      </div>
+    </div>
 
     <div class="divider">nebo vyplnit ručně</div>
 
@@ -667,26 +813,89 @@
   <div id="tableSection" style="display:none">
     <div class="section-header" style="margin-top:2rem">
       <div class="section-title" style="font-size:1.5rem">Přehledová <span>tabulka</span></div>
+      <span id="tableRowCount" style="font-size:0.75rem;color:var(--text-secondary);letter-spacing:0.1em"></span>
     </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-group">
+        <label>Model</label>
+        <input type="text" id="fModel" placeholder="Hledat..." oninput="applyTableFilters()" />
+      </div>
+      <div class="filter-group">
+        <label>Rok od</label>
+        <input type="number" id="fYearMin" placeholder="2018" min="1990" max="2025" oninput="applyTableFilters()" />
+      </div>
+      <div class="filter-group">
+        <label>Rok do</label>
+        <input type="number" id="fYearMax" placeholder="2025" min="1990" max="2025" oninput="applyTableFilters()" />
+      </div>
+      <div class="filter-group">
+        <label>Cena max (Kč)</label>
+        <input type="number" id="fPriceMax" placeholder="600000" oninput="applyTableFilters()" />
+      </div>
+      <div class="filter-group">
+        <label>Km max</label>
+        <input type="number" id="fKmMax" placeholder="80000" oninput="applyTableFilters()" />
+      </div>
+      <div class="filter-group">
+        <label>Původ</label>
+        <select id="fOrigin" onchange="applyTableFilters()">
+          <option value="">Všechny</option>
+          <option value="CZ">🇨🇿 CZ</option>
+          <option value="SK">🇸🇰 SK</option>
+          <option value="DE">🇩🇪 DE</option>
+          <option value="AT">🇦🇹 AT</option>
+          <option value="PL">🇵🇱 PL</option>
+          <option value="HU">🇭🇺 HU</option>
+          <option value="IT">🇮🇹 IT</option>
+          <option value="FR">🇫🇷 FR</option>
+          <option value="GB">🇬🇧 GB</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>STK</label>
+        <select id="fStk" onchange="applyTableFilters()">
+          <option value="">Vše</option>
+          <option value="ok">✓ Platná</option>
+          <option value="warn">⚠ Brzy expiruje</option>
+          <option value="unknown">Neznámá</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Hodnocení min</label>
+        <select id="fRating" onchange="applyTableFilters()">
+          <option value="0">Vše</option>
+          <option value="3">★★★+</option>
+          <option value="4">★★★★+</option>
+          <option value="5">★★★★★</option>
+        </select>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="resetFilters()" style="align-self:flex-end">✕ Reset</button>
+    </div>
+
     <div class="table-wrap">
       <table class="comp-table">
         <thead>
           <tr>
             <th>Foto</th>
-            <th>Model</th>
-            <th>Rok</th>
-            <th>Cena</th>
-            <th>Km</th>
+            <th class="th-sort" data-col="model" onclick="tableSort('model')">Model <span class="sort-icon">⇅</span></th>
+            <th class="th-sort" data-col="year" onclick="tableSort('year')">Rok <span class="sort-icon">⇅</span></th>
+            <th class="th-sort" data-col="price" onclick="tableSort('price')">Cena <span class="sort-icon">⇅</span></th>
+            <th class="th-sort" data-col="km" onclick="tableSort('km')">Km <span class="sort-icon">⇅</span></th>
             <th>Původ</th>
             <th>STK</th>
-            <th>Výkon</th>
-            <th>Objem</th>
-            <th>Hodnocení</th>
+            <th class="th-sort" data-col="power" onclick="tableSort('power')">Výkon <span class="sort-icon">⇅</span></th>
+            <th class="th-sort" data-col="ccm" onclick="tableSort('ccm')">Objem <span class="sort-icon">⇅</span></th>
+            <th class="th-sort" data-col="rating" onclick="tableSort('rating')">Hodnocení <span class="sort-icon">⇅</span></th>
             <th>Zdroj</th>
           </tr>
         </thead>
         <tbody id="compTableBody"></tbody>
       </table>
+    </div>
+    <div id="tableEmpty" style="display:none;text-align:center;padding:2rem;color:var(--text-muted);font-size:0.9rem">
+      Žádné výsledky pro aktuální filtry.
     </div>
   </div>
 </section>
@@ -697,6 +906,36 @@
   <p>GS Compare — neoficiální nástroj pro nadšence BMW Motorrad &nbsp;·&nbsp;
   <a href="https://github.com/davebiker/bike-compare" target="_blank">github.com/davebiker/bike-compare</a></p>
 </footer>
+
+
+<!-- ── DETAIL MODAL ── -->
+<div class="modal-overlay" id="detailModal" onclick="closeDetail(event)">
+  <div class="modal" id="detailModalInner">
+    <div class="modal-hero" id="modalHero">
+      <img id="modalMainPhoto" src="" alt="" onclick="openLightbox(currentModalBike?.photos?.[modalPhotoIdx] || '')" />
+      <button class="modal-close-btn" onclick="closeDetailDirect()">✕</button>
+      <div class="modal-hero-nav">
+        <button class="modal-nav-btn" onclick="modalNavPhoto(-1)">‹</button>
+        <button class="modal-nav-btn" onclick="modalNavPhoto(1)">›</button>
+      </div>
+      <div class="modal-photo-count" id="modalPhotoCount"></div>
+    </div>
+    <div class="modal-thumbs" id="modalThumbs"></div>
+    <div class="modal-body">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modalTitle"></div>
+          <div style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.2rem" id="modalMeta"></div>
+          <div style="margin-top:0.4rem" id="modalStars"></div>
+        </div>
+        <div class="modal-price" id="modalPrice"></div>
+      </div>
+      <div class="modal-grid" id="modalGrid"></div>
+      <div class="modal-notes" id="modalNotes" style="display:none"></div>
+      <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
+</div>
 
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
@@ -736,35 +975,10 @@ async function fetchBike() {
   if (!url) { toast('Vlož URL inzerátu', 'error'); return; }
 
   setStatus('loading', 'Načítám stránku inzerátu…');
+  const bike = await fetchSingleUrl(url);
 
-  // CORS proxies (fallback chain)
-  const proxies = [
-    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
-    u => `https://corsproxy.io/?${encodeURIComponent(u)}`
-  ];
-
-  let html = null;
-  for (const proxy of proxies) {
-    try {
-      const res = await fetch(proxy(url), { signal: AbortSignal.timeout(12000) });
-      if (!res.ok) continue;
-      const data = await res.json().catch(() => null);
-      if (data && data.contents) { html = data.contents; break; }
-      const text = await res.text().catch(() => null);
-      if (text && text.length > 500) { html = text; break; }
-    } catch(e) { continue; }
-  }
-
-  if (!html) {
-    setStatus('error', 'Nepodařilo se načíst stránku. Zkus přidat motocykl ručně.');
-    return;
-  }
-
-  setStatus('loading', 'Parsuju data z inzerátu…');
-  const bike = parseMotorcycleData(html, url);
-
-  if (!bike.model) {
-    setStatus('error', 'Nepodařilo se rozpoznat model. Přidej motocykl ručně.');
+  if (!bike) {
+    setStatus('error', 'Nepodařilo se načíst nebo rozpoznat data. Zkus jiný zdroj nebo přidej ručně.');
     return;
   }
 
@@ -843,23 +1057,52 @@ function parseMotorcycleData(html, url) {
   if (ccmM) bike.ccm = parseInt(ccmM[1]);
 
   // ── PHOTOS ──
-  const imgs = [...doc.querySelectorAll('img')];
+  // Priority 1: OG image (most reliable — set by the site explicitly for the listing)
   const photoUrls = [];
-  for (const img of imgs) {
-    const src = img.dataset.src || img.dataset.original || img.getAttribute('src') || '';
-    if (!src || src.startsWith('data:') || src.length < 10) continue;
-    if (/thumb|icon|logo|sprite|pixel|placeholder/i.test(src)) continue;
-    const abs = toAbsolute(src, url);
-    if (abs && !photoUrls.includes(abs)) photoUrls.push(abs);
-    if (photoUrls.length >= 12) break;
-  }
-  // OG image
   const og = doc.querySelector('meta[property="og:image"]');
   if (og) {
     const ogsrc = og.getAttribute('content');
-    if (ogsrc && !photoUrls.includes(ogsrc)) photoUrls.unshift(ogsrc);
+    if (ogsrc && ogsrc.startsWith('http')) photoUrls.push(ogsrc);
   }
-  bike.photos = photoUrls;
+
+  // Priority 2: JSON-LD structured data (sauto, tipcars etc. embed image arrays here)
+  doc.querySelectorAll('script[type="application/ld+json"]').forEach(s => {
+    try {
+      const data = JSON.parse(s.textContent);
+      const imgs = data.image || data.images || [];
+      (Array.isArray(imgs) ? imgs : [imgs]).forEach(i => {
+        const src = typeof i === 'string' ? i : i?.url || i?.contentUrl || '';
+        if (src && src.startsWith('http') && !photoUrls.includes(src)) photoUrls.push(src);
+      });
+    } catch(e) {}
+  });
+
+  // Priority 3: <img> tags — aggressively filter out non-photo images
+  const badSrcPattern = /logo|icon|sprite|pixel|placeholder|banner|avatar|badge|arrow|btn|button|advert|reklam|tracking|analytics|stat\.|\.gif/i;
+  const badDomainPattern = /google|facebook|twitter|gstatic|gravatar|addthis|doubleclick|ads\.|analytics/i;
+  const imgs = [...doc.querySelectorAll('img[src], img[data-src], img[data-original], img[data-lazy]')];
+
+  for (const img of imgs) {
+    // pick best src attribute
+    const src = img.dataset.src || img.dataset.original || img.dataset.lazy || img.getAttribute('src') || '';
+    if (!src || src.startsWith('data:') || src.length < 12) continue;
+
+    // skip bad patterns in URL
+    if (badSrcPattern.test(src)) continue;
+
+    // skip tiny images by declared dimensions
+    const w = parseInt(img.getAttribute('width') || img.naturalWidth || 0);
+    const h = parseInt(img.getAttribute('height') || img.naturalHeight || 0);
+    if ((w > 0 && w < 100) || (h > 0 && h < 80)) continue;
+
+    const abs = toAbsolute(src, url);
+    if (!abs) continue;
+    if (badDomainPattern.test(abs)) continue;
+    if (!photoUrls.includes(abs)) photoUrls.push(abs);
+    if (photoUrls.length >= 16) break;
+  }
+
+  bike.photos = photoUrls.slice(0, 16);
 
   return bike;
 }
@@ -873,6 +1116,105 @@ function toAbsolute(src, base) {
     if (src.startsWith('http')) return src;
     return new URL(src, base).href;
   } catch { return null; }
+}
+
+// ═══════════════════════════════════════════════
+// BULK URL FETCH
+// ═══════════════════════════════════════════════
+function toggleBulk() {
+  const sec = document.getElementById('bulkSection');
+  const btn = document.getElementById('bulkToggleBtn');
+  const open = sec.style.display === 'none';
+  sec.style.display = open ? 'block' : 'none';
+  btn.textContent = open ? '✕ Zavřít' : '⊞ Přidat více URL najednou';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const ta = document.getElementById('bulkInput');
+  if (ta) {
+    ta.addEventListener('input', () => {
+      const urls = ta.value.split('\n').map(s=>s.trim()).filter(s=>s.length>5);
+      document.getElementById('bulkCounter').textContent = `${urls.length} URL`;
+    });
+  }
+});
+
+async function fetchBulk() {
+  const ta = document.getElementById('bulkInput');
+  const urls = ta.value.split('\n').map(s=>s.trim()).filter(s=>s.startsWith('http'));
+  if (!urls.length) { toast('Vlož alespoň jednu URL', 'error'); return; }
+  if (urls.length > 10) { toast('Maximum je 10 URL najednou', 'error'); return; }
+
+  const progress = document.getElementById('bulkProgress');
+  const bar = document.getElementById('bulkProgressBar');
+  const log = document.getElementById('bulkLog');
+  progress.style.display = 'block';
+  log.innerHTML = '';
+
+  let done = 0;
+  for (const url of urls) {
+    const shortUrl = url.replace(/https?:\/\//, '').slice(0, 50) + (url.length > 55 ? '…' : '');
+    log.innerHTML += `<div id="log-${done}">⏳ ${shortUrl}</div>`;
+    log.scrollTop = log.scrollHeight;
+
+    try {
+      const bike = await fetchSingleUrl(url);
+      if (bike) {
+        bikes.push(bike);
+        save();
+        document.getElementById(`log-${done}`).innerHTML = `<span style="color:var(--green)">✓ ${bike.model || shortUrl}</span>`;
+      } else {
+        document.getElementById(`log-${done}`).innerHTML = `<span style="color:var(--red)">✕ Nelze načíst: ${shortUrl}</span>`;
+      }
+    } catch(e) {
+      document.getElementById(`log-${done}`).innerHTML = `<span style="color:var(--red)">✕ Chyba: ${shortUrl}</span>`;
+    }
+
+    done++;
+    bar.style.width = `${(done/urls.length)*100}%`;
+    await new Promise(r => setTimeout(r, 600)); // small delay between requests
+  }
+
+  renderAll();
+  toast(`Hotovo: ${done} z ${urls.length} zpracováno`, 'success');
+  bar.style.width = '100%';
+}
+
+async function fetchSingleUrl(url) {
+  const proxyFetchers = [
+    async (u) => {
+      const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, { signal: AbortSignal.timeout(10000) });
+      const d = await r.json();
+      return d.contents && d.contents.length > 1000 ? d.contents : null;
+    },
+    async (u) => {
+      const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(u)}`, { signal: AbortSignal.timeout(10000) });
+      const t = await r.text();
+      return t.length > 1000 ? t : null;
+    },
+    async (u) => {
+      const r = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, { signal: AbortSignal.timeout(10000) });
+      const t = await r.text();
+      return t.length > 1000 ? t : null;
+    }
+  ];
+
+  let html = null;
+  for (const fetcher of proxyFetchers) {
+    try { html = await fetcher(url); if (html) break; } catch(e) { continue; }
+  }
+  if (!html) return null;
+
+  const isHardBlock = (
+    (html.includes('Access Denied') && !html.includes('<title')) ||
+    html.includes('cf-browser-verification') ||
+    html.includes('challenge-form') ||
+    (html.includes('captcha') && html.length < 5000)
+  );
+  if (isHardBlock) return null;
+
+  const bike = parseMotorcycleData(html, url);
+  return bike.model ? bike : null;
 }
 
 // ═══════════════════════════════════════════════
@@ -969,7 +1311,8 @@ function updateHeader() {
   const el = document.getElementById('headerCount');
   el.textContent = `${n} motocykl${n===1?'':'ů'}`;
   el.classList.toggle('visible', n > 0);
-  document.getElementById('bikeCount').textContent = `${n} motocykl${n===1?'':'n===2||n===3||n===4?'y':'ů'} v databázi`;
+  const suffix = n===1 ? '' : (n>=2 && n<=4) ? 'y' : 'ů';
+  document.getElementById('bikeCount').textContent = `${n} motocykl${suffix} v databázi`;
 }
 
 // find best value (lowest price & km combo)
@@ -1000,12 +1343,16 @@ function renderCards() {
     const isBest = best && best.id === bike.id;
     const photo = bike.photos?.[0];
     const stk = stkBadge(bike.stk);
+    const photoCount = bike.photos?.length || 0;
 
     return `
     <div class="bike-card${isBest ? ' best-value' : ''}" id="card-${bike.id}">
-      ${photo
-        ? `<img class="bike-photo" src="${photo}" alt="${bike.model}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"/><div class="bike-photo-placeholder" style="display:none">🏍</div>`
-        : `<div class="bike-photo-placeholder">🏍</div>`}
+      <div style="position:relative;cursor:pointer" onclick="openDetail(${bike.id})">
+        ${photo
+          ? `<img class="bike-photo" src="${photo}" alt="${bike.model}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"/><div class="bike-photo-placeholder" style="display:none">🏍</div>`
+          : `<div class="bike-photo-placeholder">🏍</div>`}
+        ${photoCount > 1 ? `<div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:white;font-size:0.7rem;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:0.08em;padding:2px 8px;border-radius:20px">📷 ${photoCount}</div>` : ''}
+      </div>
       <div class="bike-body">
         <div class="bike-model">${bike.model}</div>
         <div class="bike-year-origin">${bike.year || '?'} ${bike.origin ? '· ' + flagOf(bike.origin) + ' ' + bike.origin : ''}</div>
@@ -1017,11 +1364,10 @@ function renderCards() {
           <div class="bike-stat"><span class="label">Objem</span><span class="value">${bike.ccm ? bike.ccm + ' ccm' : '—'}</span></div>
         </div>
         ${bike.rating ? `<div class="bike-stars">${'★'.repeat(bike.rating)}<span style="color:var(--text-muted)">${'★'.repeat(5-bike.rating)}</span></div>` : ''}
-        <div class="bike-notes${bike.notes ? ' has-notes' : ''}">${bike.notes || ''}</div>
-        ${bike.photos && bike.photos.length > 1 ? renderThumbs(bike) : ''}
-        <div class="bike-actions" style="margin-top:0.6rem">
+        <div class="bike-actions" style="margin-top:0.7rem">
+          <button class="btn btn-primary btn-sm" onclick="openDetail(${bike.id})">Detail →</button>
           ${bike.url ? `<a href="${bike.url}" class="bike-url-link" target="_blank">↗ Inzerát</a>` : ''}
-          <button class="btn btn-ghost btn-sm" onclick="editNotes(${bike.id})">✏ Poznámky</button>
+          <button class="btn btn-ghost btn-sm" onclick="editNotes(${bike.id})">✏</button>
           <button class="btn btn-danger btn-sm" onclick="removeBike(${bike.id})">✕</button>
         </div>
       </div>
@@ -1029,30 +1375,122 @@ function renderCards() {
   }).join('');
 }
 
-function renderThumbs(bike) {
-  const shown = bike.photos.slice(0, 6);
-  return `<div class="photos-grid">${shown.map(p =>
-    `<img class="photo-thumb" src="${p}" loading="lazy" onclick="openLightbox('${p}')" />`
-  ).join('')}${bike.photos.length > 6 ? `<div style="display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:var(--text-muted)">+${bike.photos.length-6} fotek</div>` : ''}</div>`;
+// table-level sort state (separate from card sort)
+let tableSortCol = null;
+let tableSortDir = 1; // 1=asc, -1=desc
+
+function tableSort(col) {
+  if (tableSortCol === col) {
+    tableSortDir *= -1;
+  } else {
+    tableSortCol = col;
+    tableSortDir = col === 'price' || col === 'km' ? 1 : -1; // numbers default asc, text default desc
+  }
+  // update header icons
+  document.querySelectorAll('.th-sort').forEach(th => {
+    const icon = th.querySelector('.sort-icon');
+    if (th.dataset.col === col) {
+      icon.textContent = tableSortDir === 1 ? ' ↑' : ' ↓';
+      th.style.color = 'var(--bmw-blue-light)';
+    } else {
+      icon.textContent = ' ⇅';
+      th.style.color = '';
+    }
+  });
+  renderTable();
+}
+
+function getTableFiltered() {
+  let data = getSorted();
+  const fModel = document.getElementById('fModel')?.value.trim().toLowerCase();
+  const fYearMin = parseInt(document.getElementById('fYearMin')?.value);
+  const fYearMax = parseInt(document.getElementById('fYearMax')?.value);
+  const fPriceMax = parseInt(document.getElementById('fPriceMax')?.value);
+  const fKmMax = parseInt(document.getElementById('fKmMax')?.value);
+  const fOrigin = document.getElementById('fOrigin')?.value;
+  const fStk = document.getElementById('fStk')?.value;
+  const fRating = parseInt(document.getElementById('fRating')?.value) || 0;
+
+  if (fModel) data = data.filter(b => b.model.toLowerCase().includes(fModel));
+  if (!isNaN(fYearMin)) data = data.filter(b => b.year && b.year >= fYearMin);
+  if (!isNaN(fYearMax)) data = data.filter(b => b.year && b.year <= fYearMax);
+  if (!isNaN(fPriceMax)) data = data.filter(b => b.price && b.price <= fPriceMax);
+  if (!isNaN(fKmMax)) data = data.filter(b => b.km && b.km <= fKmMax);
+  if (fOrigin) data = data.filter(b => b.origin === fOrigin);
+  if (fStk) {
+    data = data.filter(b => {
+      const d = parseSTK(b.stk);
+      const now = new Date();
+      if (!d) return fStk === 'unknown';
+      const diff = (d - now) / (1000*60*60*24*30);
+      if (fStk === 'ok') return diff >= 3;
+      if (fStk === 'warn') return diff >= 0 && diff < 3;
+      return false;
+    });
+  }
+  if (fRating > 0) data = data.filter(b => (b.rating || 0) >= fRating);
+
+  // apply table-level sort
+  if (tableSortCol) {
+    data = [...data].sort((a, z) => {
+      let av = a[tableSortCol], zv = z[tableSortCol];
+      if (typeof av === 'string') return av.localeCompare(zv) * tableSortDir;
+      return ((av || 0) - (zv || 0)) * tableSortDir;
+    });
+  }
+  return data;
+}
+
+function applyTableFilters() { renderTable(); }
+
+function resetFilters() {
+  ['fModel','fYearMin','fYearMax','fPriceMax','fKmMax'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['fOrigin','fStk','fRating'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = el.tagName === 'SELECT' && id === 'fRating' ? '0' : '';
+  });
+  tableSortCol = null;
+  tableSortDir = 1;
+  document.querySelectorAll('.th-sort').forEach(th => {
+    th.querySelector('.sort-icon').textContent = ' ⇅';
+    th.style.color = '';
+  });
+  renderTable();
 }
 
 function renderTable() {
   const tbody = document.getElementById('compTableBody');
   const tableSection = document.getElementById('tableSection');
-  const sorted = getSorted();
+  const tableEmpty = document.getElementById('tableEmpty');
 
-  if (!sorted.length) { tableSection.style.display = 'none'; return; }
+  if (!bikes.length) { tableSection.style.display = 'none'; return; }
   tableSection.style.display = 'block';
 
-  // highlight min/max
-  const prices = sorted.map(b => b.price).filter(Boolean);
-  const kms = sorted.map(b => b.km).filter(Boolean);
+  const filtered = getTableFiltered();
+  document.getElementById('tableRowCount').textContent =
+    filtered.length < bikes.length
+      ? `${filtered.length} z ${bikes.length} motocyklů`
+      : `${bikes.length} motocyklů`;
+
+  if (!filtered.length) {
+    tbody.innerHTML = '';
+    tableEmpty.style.display = 'block';
+    return;
+  }
+  tableEmpty.style.display = 'none';
+
+  // highlight min/max in filtered set
+  const prices = filtered.map(b => b.price).filter(Boolean);
+  const kms = filtered.map(b => b.km).filter(Boolean);
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
   const minKm = Math.min(...kms);
   const maxKm = Math.max(...kms);
 
-  tbody.innerHTML = sorted.map(bike => {
+  tbody.innerHTML = filtered.map(bike => {
     const photo = bike.photos?.[0];
     const pClass = bike.price === minPrice && prices.length > 1 ? 'val-best' : bike.price === maxPrice && prices.length > 1 ? 'val-worst' : '';
     const kClass = bike.km === minKm && kms.length > 1 ? 'val-best' : bike.km === maxKm && kms.length > 1 ? 'val-worst' : '';
@@ -1153,6 +1591,111 @@ function exportCSV() {
   a.click();
   toast('CSV exportováno', 'success');
 }
+
+// ═══════════════════════════════════════════════
+// DETAIL MODAL
+// ═══════════════════════════════════════════════
+let currentModalBike = null;
+let modalPhotoIdx = 0;
+
+function openDetail(id) {
+  const bike = bikes.find(b => b.id === id);
+  if (!bike) return;
+  currentModalBike = bike;
+  modalPhotoIdx = 0;
+
+  document.getElementById('modalTitle').textContent = bike.model;
+  document.getElementById('modalMeta').textContent =
+    [bike.year, bike.origin ? flagOf(bike.origin) + ' ' + bike.origin : null].filter(Boolean).join(' · ');
+  document.getElementById('modalPrice').textContent = formatPrice(bike.price);
+  document.getElementById('modalStars').innerHTML = bike.rating
+    ? `<span style="color:var(--gold)">${'★'.repeat(bike.rating)}</span><span style="color:var(--text-muted)">${'★'.repeat(5-bike.rating)}</span>`
+    : '';
+
+  // stats grid
+  const stats = [
+    { label: 'Najeté km', value: bike.km ? bike.km.toLocaleString('cs-CZ') + ' km' : '—' },
+    { label: 'STK', value: stkBadge(bike.stk) },
+    { label: 'Výkon', value: bike.power ? bike.power + ' kW' : '—' },
+    { label: 'Objem', value: bike.ccm ? bike.ccm + ' ccm' : '—' },
+    { label: 'Původ', value: bike.origin ? flagOf(bike.origin) + ' ' + bike.origin : '—' },
+    { label: 'Přidáno', value: new Date(bike.added).toLocaleDateString('cs-CZ') },
+  ];
+  document.getElementById('modalGrid').innerHTML = stats.map(s =>
+    `<div class="modal-stat"><div class="label">${s.label}</div><div class="value">${s.value}</div></div>`
+  ).join('');
+
+  // notes
+  const notesEl = document.getElementById('modalNotes');
+  if (bike.notes) { notesEl.textContent = bike.notes; notesEl.style.display = 'block'; }
+  else { notesEl.style.display = 'none'; }
+
+  // footer
+  document.getElementById('modalFooter').innerHTML = `
+    ${bike.url ? `<a href="${bike.url}" class="btn btn-primary" target="_blank">↗ Otevřít inzerát</a>` : ''}
+    <button class="btn btn-ghost" onclick="editNotes(${bike.id});closeDetailDirect()">✏ Upravit poznámky</button>
+    <button class="btn btn-danger" onclick="if(confirm('Odstranit?')){removeBike(${bike.id});closeDetailDirect()}">✕ Odebrat</button>
+  `;
+
+  // photos
+  updateModalPhoto();
+
+  document.getElementById('detailModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function updateModalPhoto() {
+  const bike = currentModalBike;
+  if (!bike) return;
+  const photos = bike.photos || [];
+  const main = document.getElementById('modalMainPhoto');
+  const countEl = document.getElementById('modalPhotoCount');
+  const thumbs = document.getElementById('modalThumbs');
+  const nav = document.querySelectorAll('.modal-nav-btn');
+
+  if (photos.length > 0) {
+    main.src = photos[modalPhotoIdx];
+    main.style.display = 'block';
+    countEl.textContent = `${modalPhotoIdx + 1} / ${photos.length}`;
+    nav.forEach(b => b.style.display = photos.length > 1 ? 'flex' : 'none');
+  } else {
+    main.style.display = 'none';
+    countEl.textContent = '';
+    nav.forEach(b => b.style.display = 'none');
+  }
+
+  thumbs.innerHTML = photos.map((p, i) =>
+    `<img class="modal-thumb${i === modalPhotoIdx ? ' active' : ''}" src="${p}" loading="lazy" onclick="setModalPhoto(${i})" />`
+  ).join('');
+  thumbs.style.display = photos.length > 1 ? 'flex' : 'none';
+}
+
+function setModalPhoto(idx) {
+  modalPhotoIdx = idx;
+  updateModalPhoto();
+}
+
+function modalNavPhoto(dir) {
+  const len = currentModalBike?.photos?.length || 1;
+  modalPhotoIdx = (modalPhotoIdx + dir + len) % len;
+  updateModalPhoto();
+}
+
+function closeDetail(e) {
+  if (e.target === document.getElementById('detailModal')) closeDetailDirect();
+}
+function closeDetailDirect() {
+  document.getElementById('detailModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// keyboard nav in modal
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('detailModal').classList.contains('open')) return;
+  if (e.key === 'Escape') closeDetailDirect();
+  if (e.key === 'ArrowLeft') modalNavPhoto(-1);
+  if (e.key === 'ArrowRight') modalNavPhoto(1);
+});
 
 // ═══════════════════════════════════════════════
 // SORT
