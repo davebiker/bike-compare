@@ -1797,16 +1797,6 @@ function loadSharedData() {
 }
 
 
-    save();
-    renderAll();
-    history.replaceState(null, '', location.pathname); // clean URL
-    toast(`Načteno ${restored.length} motocyklů ze sdíleného odkazu`, 'success');
-  } catch(e) {
-    toast('Nepodařilo se načíst sdílená data', 'error');
-    history.replaceState(null, '', location.pathname);
-  }
-}
-
 // ═══════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════
