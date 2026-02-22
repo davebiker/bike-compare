@@ -616,6 +616,7 @@
     <div class="header-actions">
       <span id="headerCount" class="badge-count">0 motocyklů</span>
       <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-ghost btn-sm" onclick="shareList()">🔗 Sdílet</button>
       <button class="btn btn-ghost btn-sm" onclick="clearAll()">🗑 Vymazat vše</button>
       <a href="#compare" class="btn btn-primary btn-sm">Srovnat →</a>
     </div>
@@ -645,7 +646,7 @@
     </div>
 
     <div id="bulkSection" style="display:none;margin-top:0.8rem">
-      <label style="font-size:0.7rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:0.4rem">Každá URL na nový řádek (max 20)</label>
+      <label style="font-size:0.7rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:0.4rem">Každá URL na nový řádek (max 50)</label>
       <textarea id="bulkInput" rows="5"
         style="width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-primary);font-family:'Barlow',sans-serif;font-size:0.82rem;padding:0.6rem 0.8rem;outline:none;resize:vertical;line-height:1.8;transition:border-color 0.2s"
         onfocus="this.style.borderColor='var(--bmw-blue)'" onblur="this.style.borderColor=''"
@@ -915,6 +916,33 @@
   </div>
 </div>
 
+<!-- ── SHARE MODAL ── -->
+<div class="modal-overlay" id="shareModal" onclick="closeShareModal(event)">
+  <div class="modal" id="shareModalInner" style="max-width:520px">
+    <div class="modal-body" style="padding:2rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
+        <div>
+          <div class="modal-title" style="font-size:1.4rem">🔗 Sdílet seznam</div>
+          <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.2rem">Odkaz obsahuje všechna data včetně náhledové fotografie</div>
+        </div>
+        <button class="modal-close-btn" style="position:static;background:var(--bg-3)" onclick="closeShareModalDirect()">✕</button>
+      </div>
+
+      <div id="shareInfo" style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:1rem;padding:0.7rem 1rem;background:var(--bg-3);border-radius:var(--radius);line-height:1.7"></div>
+
+      <div style="display:flex;gap:0.5rem;margin-bottom:0.8rem">
+        <input id="shareUrlInput" readonly
+          style="flex:1;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-primary);font-size:0.78rem;padding:0.55rem 0.8rem;outline:none;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" />
+        <button class="btn btn-primary" onclick="copyShareUrl()" id="copyBtn">Kopírovat</button>
+      </div>
+
+      <div id="shareSizeWarn" style="display:none;font-size:0.78rem;color:var(--gold);padding:0.5rem 0.8rem;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:var(--radius)">
+        ⚠ URL je delší — některé aplikace mohou mít problém s odesláním. Doporučujeme sdílet přes WhatsApp nebo e-mail.
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
@@ -939,6 +967,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAll();
   initSortBtns();
   initStars();
+  loadSharedData();
 });
 
 function save() {
@@ -1121,7 +1150,7 @@ async function fetchBulk() {
   const ta = document.getElementById('bulkInput');
   const urls = ta.value.split('\n').map(s=>s.trim()).filter(s=>s.startsWith('http'));
   if (!urls.length) { toast('Vlož alespoň jednu URL', 'error'); return; }
-  if (urls.length > 20) { toast('Maximum je 20 URL najednou', 'error'); return; }
+  if (urls.length > 50) { toast('Maximum je 50 URL najednou', 'error'); return; }
 
   const progress = document.getElementById('bulkProgress');
   const bar = document.getElementById('bulkProgressBar');
@@ -1490,6 +1519,115 @@ function renderTable() {
       <td>${bike.url ? `<a href="${bike.url}" class="bike-url-link" target="_blank">↗ Odkaz</a>` : '—'}</td>
     </tr>`;
   }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// SHARE VIA URL
+// ═══════════════════════════════════════════════
+function shareList() {
+  if (!bikes.length) { toast('Nejsou žádná data ke sdílení', 'error'); return; }
+
+  // Encode only essential fields + first photo
+  const payload = bikes.map(b => ({
+    id: b.id,
+    url: b.url || '',
+    model: b.model,
+    year: b.year || null,
+    price: b.price || null,
+    km: b.km || null,
+    origin: b.origin || null,
+    stk: b.stk || null,
+    power: b.power || null,
+    ccm: b.ccm || null,
+    photo: b.photos?.[0] || null,   // only first photo
+    notes: b.notes || '',
+    rating: b.rating || 0,
+    added: b.added
+  }));
+
+  const json = JSON.stringify(payload);
+  const encoded = btoa(unescape(encodeURIComponent(json)));
+  const shareUrl = `${location.origin}${location.pathname}#share=${encoded}`;
+
+  document.getElementById('shareUrlInput').value = shareUrl;
+
+  const kb = Math.round(encoded.length / 1024 * 10) / 10;
+  const photos = payload.filter(b => b.photo).length;
+  document.getElementById('shareInfo').innerHTML =
+    `📋 <strong>${bikes.length} motocyklů</strong> · ${photos} s náhledovou fotkou · velikost URL: <strong>${kb} kB</strong>`;
+
+  const warn = document.getElementById('shareSizeWarn');
+  warn.style.display = encoded.length > 8000 ? 'block' : 'none';
+
+  document.getElementById('shareModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Select URL text
+  setTimeout(() => document.getElementById('shareUrlInput').select(), 100);
+}
+
+function copyShareUrl() {
+  const input = document.getElementById('shareUrlInput');
+  navigator.clipboard.writeText(input.value).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Zkopírováno';
+    btn.style.background = 'var(--green)';
+    setTimeout(() => { btn.textContent = 'Kopírovat'; btn.style.background = ''; }, 2500);
+  }).catch(() => {
+    input.select();
+    document.execCommand('copy');
+    toast('Zkopírováno', 'success');
+  });
+}
+
+function closeShareModal(e) {
+  if (e.target === document.getElementById('shareModal')) closeShareModalDirect();
+}
+function closeShareModalDirect() {
+  document.getElementById('shareModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Load shared data from URL hash on page load
+function loadSharedData() {
+  const hash = location.hash;
+  if (!hash.startsWith('#share=')) return;
+
+  try {
+    const encoded = hash.slice(7);
+    const json = decodeURIComponent(escape(atob(encoded)));
+    const shared = JSON.parse(json);
+
+    if (!Array.isArray(shared) || !shared.length) return;
+
+    // Restore photos array from single photo
+    const restored = shared.map(b => ({
+      ...b,
+      photos: b.photo ? [b.photo] : []
+    }));
+
+    // Ask user what to do
+    const msg = `Byl sdílen seznam ${restored.length} motocyklů.
+
+Co chceš udělat?
+OK = Nahradit moje data sdílenými
+Zrušit = Přidat sdílené k mým datům`;
+    if (confirm(msg)) {
+      bikes = restored;
+    } else {
+      // Merge — avoid duplicates by id
+      const existingIds = new Set(bikes.map(b => b.id));
+      restored.forEach(b => { if (!existingIds.has(b.id)) bikes.push(b); });
+    }
+
+    save();
+    renderAll();
+    history.replaceState(null, '', location.pathname); // clean URL
+    toast(`Načteno ${restored.length} motocyklů ze sdíleného odkazu`, 'success');
+  } catch(e) {
+    toast('Nepodařilo se načíst sdílená data', 'error');
+    history.replaceState(null, '', location.pathname);
+  }
 }
 
 // ═══════════════════════════════════════════════
