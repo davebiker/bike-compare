@@ -653,7 +653,8 @@
         placeholder="https://motorky.bazos.cz/inzerat/111...&#10;https://www.sauto.cz/inzerce/detail/...&#10;https://www.tipcars.com/..."></textarea>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:0.5rem;flex-wrap:wrap;gap:0.5rem">
         <span id="bulkCounter" style="font-size:0.75rem;color:var(--text-muted)">0 URL</span>
-        <button class="btn btn-primary" onclick="fetchBulk()">⬇ Načíst všechny</button>
+        <button class="btn btn-primary" id="bulkStartBtn" onclick="fetchBulk()">⬇ Načíst všechny</button>
+        <button class="btn btn-danger" id="bulkStopBtn" onclick="stopBulk()" style="display:none">⏹ Stop</button>
       </div>
       <div id="bulkProgress" style="display:none;margin-top:0.8rem">
         <div style="height:3px;background:var(--bg-3);border-radius:2px;overflow:hidden;margin-bottom:0.6rem">
@@ -1146,11 +1147,28 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+let bulkAborted = false;
+
+function stopBulk() {
+  bulkAborted = true;
+  document.getElementById('bulkStopBtn').textContent = '⏹ Zastavuji…';
+  document.getElementById('bulkStopBtn').disabled = true;
+}
+
 async function fetchBulk() {
   const ta = document.getElementById('bulkInput');
   const urls = ta.value.split('\n').map(s=>s.trim()).filter(s=>s.startsWith('http'));
   if (!urls.length) { toast('Vlož alespoň jednu URL', 'error'); return; }
   if (urls.length > 50) { toast('Maximum je 50 URL najednou', 'error'); return; }
+
+  bulkAborted = false;
+  const startBtn = document.getElementById('bulkStartBtn');
+  const stopBtn = document.getElementById('bulkStopBtn');
+  startBtn.disabled = true;
+  startBtn.textContent = '⏳ Načítám…';
+  stopBtn.style.display = 'inline-flex';
+  stopBtn.disabled = false;
+  stopBtn.textContent = '⏹ Stop';
 
   const progress = document.getElementById('bulkProgress');
   const bar = document.getElementById('bulkProgressBar');
@@ -1159,7 +1177,13 @@ async function fetchBulk() {
   log.innerHTML = '';
 
   let done = 0;
+  let added = 0;
   for (const url of urls) {
+    if (bulkAborted) {
+      log.innerHTML += `<div style="color:var(--gold)">⏹ Zastaveno po ${done} URL</div>`;
+      break;
+    }
+
     const shortUrl = url.replace(/https?:\/\//, '').slice(0, 50) + (url.length > 55 ? '…' : '');
     log.innerHTML += `<div id="log-${done}">⏳ ${shortUrl}</div>`;
     log.scrollTop = log.scrollHeight;
@@ -1169,6 +1193,7 @@ async function fetchBulk() {
       if (bike) {
         bikes.push(bike);
         save();
+        added++;
         document.getElementById(`log-${done}`).innerHTML = `<span style="color:var(--green)">✓ ${bike.model || shortUrl}</span>`;
       } else {
         document.getElementById(`log-${done}`).innerHTML = `<span style="color:var(--red)">✕ Nelze načíst: ${shortUrl}</span>`;
@@ -1179,12 +1204,19 @@ async function fetchBulk() {
 
     done++;
     bar.style.width = `${(done/urls.length)*100}%`;
-    await new Promise(r => setTimeout(r, 600)); // small delay between requests
+    await new Promise(r => setTimeout(r, 600));
   }
 
   renderAll();
-  toast(`Hotovo: ${done} z ${urls.length} zpracováno`, 'success');
-  bar.style.width = '100%';
+  const msg = bulkAborted
+    ? `Zastaveno — přidáno ${added} z ${done} zpracovaných`
+    : `Hotovo: přidáno ${added} z ${urls.length}`;
+  toast(msg, bulkAborted ? 'info' : 'success');
+
+  startBtn.disabled = false;
+  startBtn.textContent = '⬇ Načíst všechny';
+  stopBtn.style.display = 'none';
+  if (!bulkAborted) bar.style.width = '100%';
 }
 
 async function fetchSingleUrl(url) {
