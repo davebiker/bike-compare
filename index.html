@@ -667,7 +667,7 @@
     </div>
 
     <div id="bulkSection" style="display:none;margin-top:0.8rem">
-      <label style="font-size:0.7rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:0.4rem">Každá URL na nový řádek (max 10)</label>
+      <label style="font-size:0.7rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:0.4rem">Každá URL na nový řádek (max 20)</label>
       <textarea id="bulkInput" rows="5"
         style="width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-primary);font-family:'Barlow',sans-serif;font-size:0.82rem;padding:0.6rem 0.8rem;outline:none;resize:vertical;line-height:1.8;transition:border-color 0.2s"
         onfocus="this.style.borderColor='var(--bmw-blue)'" onblur="this.style.borderColor=''"
@@ -1143,7 +1143,7 @@ async function fetchBulk() {
   const ta = document.getElementById('bulkInput');
   const urls = ta.value.split('\n').map(s=>s.trim()).filter(s=>s.startsWith('http'));
   if (!urls.length) { toast('Vlož alespoň jednu URL', 'error'); return; }
-  if (urls.length > 10) { toast('Maximum je 10 URL najednou', 'error'); return; }
+  if (urls.length > 20) { toast('Maximum je 20 URL najednou', 'error'); return; }
 
   const progress = document.getElementById('bulkProgress');
   const bar = document.getElementById('bulkProgressBar');
