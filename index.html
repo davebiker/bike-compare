@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GS Compare — BMW Motorrad</title>
+<title>MotoCompare — Srovnání motocyklů</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bmw-blue: #1C69D4;
-    --bmw-blue-light: #4A8FE7;
-    --bmw-blue-dark: #0E4FA8;
+    --bmw-blue: #E05C2A;
+    --bmw-blue-light: #F07A4A;
+    --bmw-blue-dark: #B8451A;
     --bg-0: #070A0F;
     --bg-1: #0D1117;
     --bg-2: #131920;
@@ -56,30 +57,11 @@
     display: flex; align-items: center; gap: 14px;
     text-decoration: none;
   }
-  .logo-bmw {
-    width: 40px; height: 40px;
-    background: var(--bmw-blue);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    position: relative; overflow: hidden; flex-shrink: 0;
+  .logo-icon {
+    font-size: 1.7rem;
+    color: var(--bmw-blue);
+    flex-shrink: 0;
   }
-  .logo-bmw::before {
-    content: '';
-    position: absolute; top: 50%; left: 0; right: 0;
-    height: 2px; background: white;
-    transform: translateY(-50%);
-  }
-  .logo-bmw::after {
-    content: '';
-    position: absolute; left: 50%; top: 0; bottom: 0;
-    width: 2px; background: white;
-    transform: translateX(-50%);
-  }
-  .logo-quad { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; }
-  .logo-quad span:nth-child(1) { background: white; }
-  .logo-quad span:nth-child(2) { background: var(--bmw-blue); }
-  .logo-quad span:nth-child(3) { background: var(--bmw-blue); }
-  .logo-quad span:nth-child(4) { background: white; }
   .logo-text { display: flex; flex-direction: column; line-height: 1; }
   .logo-text .brand { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.15em; color: white; }
   .logo-text .sub { font-family: 'Barlow Condensed', sans-serif; font-weight: 300; font-size: 0.65rem; letter-spacing: 0.3em; color: var(--text-secondary); }
@@ -120,7 +102,7 @@
     position: relative;
   }
   .hero::before {
-    content: 'GS';
+    content: '';
     position: absolute; bottom: -0.1em; left: 50%;
     transform: translateX(-50%);
     font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 22vw;
@@ -625,14 +607,10 @@
 <header>
   <div class="header-inner">
     <a class="logo" href="#">
-      <div class="logo-bmw" aria-hidden="true">
-        <div class="logo-quad">
-          <span></span><span></span><span></span><span></span>
-        </div>
-      </div>
+<i class="fa-solid fa-motorcycle logo-icon" aria-hidden="true"></i>
       <div class="logo-text">
-        <span class="brand">BMW MOTORRAD</span>
-        <span class="sub">GS Compare</span>
+        <span class="brand">MOTO COMPARE</span>
+        <span class="sub">srovnání motocyklů</span>
       </div>
     </a>
     <div class="header-actions">
@@ -647,9 +625,9 @@
 <!-- ── HERO ── -->
 <main>
 <section class="hero" id="home">
-  <p class="hero-label">BMW Motorrad — GS Adventure Series</p>
-  <h1 class="hero-title">Porovnej <span>svůj</span><br/>příští GS</h1>
-  <p class="hero-sub">Vlož URL inzerátu, aplikace automaticky načte data a přidá motocykl do srovnávací tabulky.</p>
+  <p class="hero-label">Vyberte si svůj příští motocykl</p>
+  <h1 class="hero-title">Porovnej <span>moto</span><br/>inzeráty</h1>
+  <p class="hero-sub">Vlož URL inzerátu z bazos.cz, sauto.cz nebo tipcars.com — aplikace automaticky načte data a přidá motocykl do srovnání.</p>
 
   <!-- URL CARD -->
   <div class="url-card">
@@ -671,7 +649,7 @@
       <textarea id="bulkInput" rows="5"
         style="width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-primary);font-family:'Barlow',sans-serif;font-size:0.82rem;padding:0.6rem 0.8rem;outline:none;resize:vertical;line-height:1.8;transition:border-color 0.2s"
         onfocus="this.style.borderColor='var(--bmw-blue)'" onblur="this.style.borderColor=''"
-        placeholder="https://motorky.bazos.cz/inzerat/111...&#10;https://motorky.bazos.cz/inzerat/222...&#10;https://www.sauto.cz/inzerce/detail/..."></textarea>
+        placeholder="https://motorky.bazos.cz/inzerat/111...&#10;https://www.sauto.cz/inzerce/detail/...&#10;https://www.tipcars.com/..."></textarea>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:0.5rem;flex-wrap:wrap;gap:0.5rem">
         <span id="bulkCounter" style="font-size:0.75rem;color:var(--text-muted)">0 URL</span>
         <button class="btn btn-primary" onclick="fetchBulk()">⬇ Načíst všechny</button>
@@ -692,7 +670,7 @@
       <div class="form-grid" style="margin-top:1rem">
         <div class="form-group full">
           <label>Model / název</label>
-          <input type="text" id="f_model" placeholder="BMW R 1250 GS Adventure" />
+          <input type="text" id="f_model" placeholder="Honda Africa Twin, KTM 890 Adventure..." />
         </div>
         <div class="form-group">
           <label>Rok výroby</label>
@@ -787,7 +765,7 @@
 <section class="section" id="compare">
   <div class="section-header">
     <div>
-      <div class="section-title">Srovnání <span>GS</span></div>
+      <div class="section-title">Srovnání <span>moto</span></div>
       <div class="section-count" id="bikeCount">0 motocyklů v databázi</div>
     </div>
     <div class="sort-bar">
@@ -903,7 +881,7 @@
 
 <!-- FOOTER -->
 <footer>
-  <p>GS Compare — neoficiální nástroj pro nadšence BMW Motorrad &nbsp;·&nbsp;
+  <p>MotoCompare — srovnávač motocyklových inzerátů &nbsp;·&nbsp;
   <a href="https://github.com/davebiker/bike-compare" target="_blank">github.com/davebiker/bike-compare</a></p>
 </footer>
 
@@ -950,7 +928,7 @@
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-let bikes = JSON.parse(localStorage.getItem('gs_compare_bikes') || '[]');
+let bikes = JSON.parse(localStorage.getItem('moto_compare_bikes') || '[]');
 let manualRating = 0;
 let currentSort = 'added';
 
@@ -964,7 +942,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function save() {
-  localStorage.setItem('gs_compare_bikes', JSON.stringify(bikes));
+  localStorage.setItem('moto_compare_bikes', JSON.stringify(bikes));
 }
 
 // ═══════════════════════════════════════════════
@@ -1020,7 +998,7 @@ function parseMotorcycleData(html, url) {
     if (t.length > 3) { bike.model = cleanModel(t); break; }
   }
   if (!bike.model) {
-    const m = text.match(/BMW\s+[A-Z]\s*\d{3,4}\s*(?:GS|Adventure|R|F|S|G|K)[^,\n]*/i);
+    const m = text.match(/(?:BMW|Honda|Yamaha|Kawasaki|Suzuki|KTM|Ducati|Triumph|Royal Enfield|Harley|Husqvarna|Aprilia|MV Agusta|Benelli|CFMoto|Moto Guzzi|Indian|Beta|Sherco)[^,\n<]{3,60}/i);
     if (m) bike.model = cleanModel(m[0]);
   }
 
