@@ -6,6 +6,7 @@
 <title>MotoCompare — Srovnání motocyklů</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <style>
   :root {
@@ -1691,7 +1692,6 @@ function renderTable() {
 function shareList() {
   if (!bikes.length) { toast('Nejsou žádná data ke sdílení', 'error'); return; }
 
-  // Encode only essential fields + first photo
   const payload = bikes.map(b => ({
     id: b.id,
     url: b.url || '',
@@ -1703,30 +1703,34 @@ function shareList() {
     stk: b.stk || null,
     power: b.power || null,
     ccm: b.ccm || null,
-    photo: b.photos?.[0] || null,   // only first photo
+    photo: b.photos?.[0] || null,
     notes: b.notes || '',
     rating: b.rating || 0,
     added: b.added
   }));
 
   const json = JSON.stringify(payload);
-  const encoded = btoa(unescape(encodeURIComponent(json)));
-  const shareUrl = `${location.origin}${location.pathname}#share=${encoded}`;
+
+  // LZ compressed (preferred — much shorter)
+  const compressed = LZString.compressToEncodedURIComponent(json);
+  const shareUrl = `${location.origin}${location.pathname}#share=${compressed}`;
+
+  // Stats
+  const rawKb  = Math.round(btoa(unescape(encodeURIComponent(json))).length / 1024 * 10) / 10;
+  const compKb = Math.round(compressed.length / 1024 * 10) / 10;
+  const saving  = Math.round((1 - compKb / rawKb) * 100);
+  const photos  = payload.filter(b => b.photo).length;
 
   document.getElementById('shareUrlInput').value = shareUrl;
-
-  const kb = Math.round(encoded.length / 1024 * 10) / 10;
-  const photos = payload.filter(b => b.photo).length;
   document.getElementById('shareInfo').innerHTML =
-    `📋 <strong>${bikes.length} motocyklů</strong> · ${photos} s náhledovou fotkou · velikost URL: <strong>${kb} kB</strong>`;
+    `📋 <strong>${bikes.length} motocyklů</strong> · ${photos} s náhledovou fotkou<br>
+     Velikost: <strong>${compKb} kB</strong> <span style="color:var(--green);font-size:0.8em">(zkomprimováno ${saving}% — původně ${rawKb} kB)</span>`;
 
   const warn = document.getElementById('shareSizeWarn');
-  warn.style.display = encoded.length > 8000 ? 'block' : 'none';
+  warn.style.display = compressed.length > 6000 ? 'block' : 'none';
 
   document.getElementById('shareModal').classList.add('open');
   document.body.style.overflow = 'hidden';
-
-  // Select URL text
   setTimeout(() => document.getElementById('shareUrlInput').select(), 100);
 }
 
@@ -1759,30 +1763,39 @@ function loadSharedData() {
 
   try {
     const encoded = hash.slice(7);
-    const json = decodeURIComponent(escape(atob(encoded)));
-    const shared = JSON.parse(json);
+    let json = null;
 
+    // Try LZ decompression first (new format)
+    try { json = LZString.decompressFromEncodedURIComponent(encoded); } catch(e) {}
+
+    // Fallback: legacy base64
+    if (!json || json === 'null') {
+      try { json = decodeURIComponent(escape(atob(encoded))); } catch(e) {}
+    }
+
+    const shared = JSON.parse(json);
     if (!Array.isArray(shared) || !shared.length) return;
 
-    // Restore photos array from single photo
-    const restored = shared.map(b => ({
-      ...b,
-      photos: b.photo ? [b.photo] : []
-    }));
+    const restored = shared.map(b => ({ ...b, photos: b.photo ? [b.photo] : [] }));
 
-    // Ask user what to do
-    const msg = `Byl sdílen seznam ${restored.length} motocyklů.
-
-Co chceš udělat?
-OK = Nahradit moje data sdílenými
-Zrušit = Přidat sdílené k mým datům`;
+    const msg = `Byl sdílen seznam ${restored.length} motocyklů.\n\nOK = Nahradit moje data sdílenými\nZrušit = Přidat sdílené k mým datům`;
     if (confirm(msg)) {
       bikes = restored;
     } else {
-      // Merge — avoid duplicates by id
       const existingIds = new Set(bikes.map(b => b.id));
       restored.forEach(b => { if (!existingIds.has(b.id)) bikes.push(b); });
     }
+
+    save();
+    renderAll();
+    history.replaceState(null, '', location.pathname);
+    toast(`Načteno ${restored.length} motocyklů ze sdíleného odkazu`, 'success');
+  } catch(e) {
+    toast('Nepodařilo se načíst sdílená data', 'error');
+    history.replaceState(null, '', location.pathname);
+  }
+}
+
 
     save();
     renderAll();
